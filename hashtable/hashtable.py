@@ -1,3 +1,4 @@
+import math
 class HashTableEntry:
     """
     Hash Table entry, as a linked list node.
@@ -7,6 +8,7 @@ class HashTableEntry:
         self.key = key
         self.value = value
         self.next = None
+        
 
 
 class HashTable:
@@ -20,14 +22,18 @@ class HashTable:
     def __init__(self, capacity):
         self.capacity = capacity
         self.table = [None] * capacity
-
+        self.copy = None
+        self.entries = 0
+        self.load_factor = 0
     def fnv1(self, key):
         fnv_hash = 14695981039346656037
 
         enc_key = key.encode()
         for e in enc_key:
-            fnv_hash = fnv_hash * 1099511628211
             fnv_hash = fnv_hash ^ e
+            fnv_hash = fnv_hash * 1099511628211
+            
+        
         return fnv_hash
 
     def djb2(self, key):
@@ -57,6 +63,13 @@ class HashTable:
         node = self.table[index] 
         if node == None:
             self.table[index] = HashTableEntry(key, value)
+            self.entries += 1
+            self.load_factor = self.entries / self.capacity
+            print(value, self.load_factor)
+            if self.load_factor > 0.7:
+                self.capacity = math.ceil(self.capacity * 2)
+                self.load_factor = self.entries / self.capacity
+                self.resize(self.capacity)
         elif node.key == key:
             node.value = value
         else:
@@ -67,9 +80,16 @@ class HashTable:
                     return
                 elif node.next == None:
                     node.next = HashTableEntry(key, value)
+                    self.entries += 1
+                    self.load_factor = self.entries / self.capacity
+                    print(value, self.load_factor)
+                    if self.load_factor > 0.7:
+                        self.capacity = math.ceil(self.capacity * 2)
+                        self.load_factor = self.entries / self.capacity
+                        self.resize(self.capacity)
                     return
                 node = node.next
-
+        
 
     def delete(self, key):
         """
@@ -87,13 +107,27 @@ class HashTable:
         elif node.key == key:
             if node.next == None:
                 self.table[index] = None
+                if self.load_factor < 0.2:
+                    self.capacity = math.ceil(self.capacity * .5)
+                    self.load_factor = self.entries / self.capacity
+                    self.resize(self.capacity)
         else:
             while node.next != None:
                 prev = node
                 node = node.next
                 if node.key == key:
                     prev.next = node.next
+                    self.entries -= 1
+                    self.load_factor = self.entries / self.capacity
+                    if self.load_factor < 0.2:
+                        self.capacity = math.ceil(self.capacity * .5)
+                        self.load_factor = self.entries / self.capacity
+                        self.resize(self.capacity)
                     return node
+        if self.load_factor < 0.2:
+            self.capacity = math.ceil(self.capacity * .5)
+            self.load_factor = self.entries / self.capacity
+            self.resize(self.capacity)
         return None
 
     def get(self, key):
@@ -109,7 +143,7 @@ class HashTable:
         if node == None:
             return None
         elif node.key == key:
-            print('elif', node.value, node.next)
+            
             return node.value
             
         else:
@@ -118,17 +152,51 @@ class HashTable:
                 if node == None:
                     return None
                 if node.key == key:
-                    print(node.value)
+                    
                     return node.value
                 
 
-    def resize(self):
+    def resize(self, new_size):
         """
         Doubles the capacity of the hash table and
         rehash all key/value pairs.
 
         Implement this.
         """
+        if self.load_factor < 0.2 and self.load_factor != 0:
+            self.copy = self.table[:]
+            
+            self.table = [None] * new_size
+          
+            node = None
+            
+            for i in range(len(self.copy)):
+                node = self.copy[i]
+                if node != None:
+                    while node != None:
+                        self.put(node.key, node.value)
+                        node = node.next
+            self.copy = None
+             
+        
+        if self.load_factor > 0.7:
+            self.copy = self.table[:]
+            self.capacity = math.ceil(self.capacity * 2)
+            self.table = [None] * (self.capacity)
+            
+            
+
+            node = None
+            
+            for i in range(len(self.copy)):
+                node = self.copy[i]
+                if node != None:
+                    while node != None:
+                        self.put(node.key, node.value)
+                        node = node.next
+            
+        
+
 
 if __name__ == "__main__":
     ht = HashTable(2)
