@@ -1,5 +1,15 @@
 def no_dups(s):
-    # Implement me.
+    sl = s.split(' ')
+    d = {}
+    arr = []
+    for i in sl:
+        if i not in d:
+            d[i] = True
+    
+    for k, v in d.items():
+        arr.append(k)
+
+    return " ".join(arr)
 
 
 if __name__ == "__main__":

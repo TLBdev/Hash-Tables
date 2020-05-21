@@ -1,14 +1,17 @@
 import math
 import random
-
+d = {}
 def slowfun(x, y):
+    
     # TODO: Modify to produce the same results, but much faster
-    v = math.pow(x, y)
-    v = math.factorial(v)
-    v //= (x + y)
-    v %= 982451653
-
-    return v
+    if (x, y) not in d:
+        v = math.pow(x, y)
+        v = math.factorial(v)
+        v //= (x + y)
+        v %= 982451653
+        d[(x,y)] = v
+    return d[(x,y)]
+    
 
 
 # Do not modify below this line!

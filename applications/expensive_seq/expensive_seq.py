@@ -1,5 +1,13 @@
+d = {}
 def expensive_seq(x, y, z):
-    # Implement me
+    
+    if (x, y, z) in d:
+        return d[(x, y, z)]
+    if x <= 0: 
+        d[(x, y, z)] = y + z
+    if x > 0: 
+        d[(x, y, z)] = expensive_seq(x-1,y+1,z) + expensive_seq(x-2,y+2,z*2) + expensive_seq(x-3,y+3,z*3)
+    return d[(x, y, z)]
 
 if __name__ == "__main__":
     for i in range(10):
